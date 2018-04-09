@@ -19,8 +19,7 @@ brigittaRestMv = 3.3 / 4096 *(brigittaRest.ecg1 - 2048);
 % zsofiaRestMv = 3.3 / 8192 *(zsofiaRest - 2048);
 % brigittaRestMv = 3.3 / 8192 *(brigittaRest - 2048); 
 
-% 100s
-fs=100;
+fs=1000; % sampled at this frequency [Hz]
 
 % visualize data
 figure()
@@ -104,7 +103,7 @@ frequencySpectrum(brigittaControlBreathFiltered,'Brigitta - controlled breathing
 
 %% 2 task
 
-fs=1000;
+fs=1000; % sampled at this frequency [Hz]
 
 % load red ppgl signal into variables
 adamRestPpglRed=adamRest.ppgl_red;
@@ -183,6 +182,8 @@ xlabel('t [sec]');ylabel('U [mV]');
 
 %% Frequency spectrum
 function frequencySpectrum(ecg,titleOfDiagram)
+    % @ecg: hhm object's property
+    % @titleOfDiagram: title of the diagram
     fs=1000; % sampled at this frequency [Hz]   
     Y = fft(ecg); % fast fourier transformation
     L=length(ecg); % signal length
@@ -200,55 +201,55 @@ end
 
 %% Butterworth filter
 function highPassFilteredSignal=butterworthFilter(ecg, order, lowerCutOff,upperCutOff)
-% ecg: hhm object's property
-% order: Butterworth filter parameter, for instance: 5 -> 5th-order
-% Butterworth filter
-% lowerCutOff: lower cutoff frequency [Hz]
-% upperCutOff: upper cutoff frequency [Hz]
-fs=1024; % sampled at this frequency [Hz]
-n = order; % xth-order Butterworth filter parameter
-fUpperCutOff = upperCutOff; % upper cutoff frequency [Hz]
-fLowerCutOff = lowerCutOff; % lower cutoff frequency [Hz]
-% create two Butterwort filters, one for upper cutoff, one for lower cutoff
-[bLower,aLower]=butter(n,fLowerCutOff/(fs*0.5),'low');
-[bUpper,aUpper]=butter(n,fUpperCutOff/(fs*0.5),'high'); 
-% filter signal
-lowPassFilteredSignal = filtfilt(bLower, aLower, ecg);
-highPassFilteredSignal = filtfilt(bUpper, aUpper, lowPassFilteredSignal);
-end
+    % @ecg: hhm object's property
+    % @order: Butterworth filter parameter, for instance: 5 -> 5th-order
+    % Butterworth filter
+    % @lowerCutOff: lower cutoff frequency [Hz]
+    % @upperCutOff: upper cutoff frequency [Hz]
+    fs=1024; % sampled at this frequency [Hz]
+    n = order; % xth-order Butterworth filter parameter
+    fUpperCutOff = upperCutOff; % upper cutoff frequency [Hz]
+    fLowerCutOff = lowerCutOff; % lower cutoff frequency [Hz]
+    % create two Butterwort filters, one for upper cutoff, one for lower cutoff
+    [bLower,aLower]=butter(n,fLowerCutOff/(fs*0.5),'low');
+    [bUpper,aUpper]=butter(n,fUpperCutOff/(fs*0.5),'high'); 
+    % filter signal
+    lowPassFilteredSignal = filtfilt(bLower, aLower, ecg);
+    highPassFilteredSignal = filtfilt(bUpper, aUpper, lowPassFilteredSignal);
+    end
 
 %% HHM file reader
 function o=hhmbinread(filename)
-%HHM file reader
-% Input: name of HHM file (with full path and extension)
-% Output: structure with fields:
-%  ecg1: ECG lead Einthoven I.
-%  ecg2: ECG lead Einthoven II.
-%  press: cuff pressure captured from analog/digital converter. Offset is
-%     not compensated. 15.5 LSB/mmHg
-%  ppgl_red: PPG left red
-%  ppgl_red_dc: PPG left red without DC level filtering (smaller gain)
-%  ppgr_nir: PPG right near infra red
-%  ppgl_nir_dc: PPG left nir without DC level filtering (smaller gain)
-%  ppgl_nir: PPG left near infra red
-%
-% Every channel is sampled with 1 kHz
-%Csordás Péter 2006
-fid=fopen(filename,'r','b');
-if fid==-1 error('File not found'); end
+    %HHM file reader
+    % Input: name of HHM file (with full path and extension)
+    % Output: structure with fields:
+    %  ecg1: ECG lead Einthoven I.
+    %  ecg2: ECG lead Einthoven II.
+    %  press: cuff pressure captured from analog/digital converter. Offset is
+    %     not compensated. 15.5 LSB/mmHg
+    %  ppgl_red: PPG left red
+    %  ppgl_red_dc: PPG left red without DC level filtering (smaller gain)
+    %  ppgr_nir: PPG right near infra red
+    %  ppgl_nir_dc: PPG left nir without DC level filtering (smaller gain)
+    %  ppgl_nir: PPG left near infra red
+    %
+    % Every channel is sampled with 1 kHz
+    %Csordás Péter 2006
+    fid=fopen(filename,'r','b');
+    if fid==-1 error('File not found'); end
 
-buffer=fread(fid,'bit12=>double'); 
-idx=find(buffer<0);
-if(~isempty(idx))
-    buffer(idx)=buffer(idx)+4096; %overflow correction
-end
+    buffer=fread(fid,'bit12=>double'); 
+    idx=find(buffer<0);
+    if(~isempty(idx))
+        buffer(idx)=buffer(idx)+4096; %overflow correction
+    end
 
-o.ecg1=buffer(1:8:end);
-o.ecg2=buffer(2:8:end);
-o.press=buffer(3:8:end);
-o.ppgl_red=buffer(4:8:end);
-o.ppgl_red_dc=buffer(5:8:end);
-o.ppgr_nir=buffer(6:8:end);
-o.ppgl_nir_dc=buffer(7:8:end);
-o.ppgl_nir=buffer(8:8:end);
+    o.ecg1=buffer(1:8:end);
+    o.ecg2=buffer(2:8:end);
+    o.press=buffer(3:8:end);
+    o.ppgl_red=buffer(4:8:end);
+    o.ppgl_red_dc=buffer(5:8:end);
+    o.ppgr_nir=buffer(6:8:end);
+    o.ppgl_nir_dc=buffer(7:8:end);
+    o.ppgl_nir=buffer(8:8:end);
 end
