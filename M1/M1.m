@@ -3,9 +3,9 @@ close all;
 clear all;
 
 %% Load files and set variables
-adamRest=hhmbinread('hhm_konz1.hhm');
-zsofiaRest=hhmbinread('hhmkonz2.hhm');
-brigittaRest=hhmbinread('hhm_konz3.hhm');
+adamRest=hhmbinread('rest/hhm_konz1.hhm');
+zsofiaRest=hhmbinread('rest/hhmkonz2.hhm');
+brigittaRest=hhmbinread('rest/hhm_konz3.hhm');
 
 % this transformation applies to the „2” signed HHMD 
 % .ecg1 is a property of the object (for instance: adamRest) and holds the
@@ -87,20 +87,99 @@ brigittaHoldBreath30Sec=hhmbinread('hold_breath/brigitta_hold_breath_30sec.hhm')
 brigittaHoldBreath30SecFiltered = butterworthFilter(brigittaHoldBreath30Sec.ecg1 - mean(brigittaHoldBreath30Sec.ecg1),5,20,0.5);
 frequencySpectrum(brigittaHoldBreath30SecFiltered,'Brigitta - holding breath for 30 seconds - fft'); %visualize in frequency domain 
 
-%controlling breath: Adam 
+%controlling breathing: Adam 
 adamControlBreath=hhmbinread('control_breath/adam_control_breath.hhm');
 adamControlBreathFiltered = butterworthFilter(adamControlBreath.ecg1 - mean(adamControlBreath.ecg1),5,20,0.5);
 frequencySpectrum(adamControlBreathFiltered,'Adam - controlled breathing - fft'); %visualize in frequency domain 
  
-%controlling breath: Zsofia 
+%controlling breathing: Zsofia 
 zsofiaControlBreath=hhmbinread('control_breath/zsofia_control_breath.hhm');
 zsofiaControlBreathFiltered = butterworthFilter(zsofiaControlBreath.ecg1 - mean(zsofiaControlBreath.ecg1),5,20,0.5);
 frequencySpectrum(zsofiaControlBreathFiltered,'Zsofia - controlled breathing - fft'); %visualize in frequency domain 
 
-%controlling breath: Brigitta
+%controlling breathing: Brigitta
 brigittaControlBreath=hhmbinread('control_breath/brigitta_control_breath.hhm');
 brigittaControlBreathFiltered = butterworthFilter(brigittaControlBreath.ecg1 - mean(brigittaControlBreath.ecg1),5,20,0.5);
 frequencySpectrum(brigittaControlBreathFiltered,'Brigitta - controlled breathing - fft'); %visualize in frequency domain
+
+%% 2 task
+
+fs=1000;
+
+% load red ppgl signal into variables
+adamRestPpglRed=adamRest.ppgl_red;
+adamRestPpglRedSplit = adamRestPpglRed(1:30000); % be aware of matrix size
+
+adamHoldBreathPpglRed = adamHoldBreath30Sec.ppgl_red;
+adamHoldBreathPpglRedSplit = adamHoldBreathPpglRed(1:30000);
+
+adamControlBreathPpglRed = adamControlBreath.ppgl_red;
+adamControlBreathPpglRedSplit = adamControlBreathPpglRed(1:30000);
+
+adamSquat = hhmbinread('squat/adam_squat.hhm'); % this file was not loaded
+adamSquatPpglRed = adamSquat.ppgl_red;
+adamSquatPpglRedSplit = adamSquatPpglRed(1:30000);
+
+% visualize signals
+figure()
+
+t=(1:length(adamRestPpglRedSplit))/fs;
+subplot(3,1,1); 
+plot(t,3.3 / 4096 *(adamRestPpglRedSplit - 2048)); title('Adam rest ppgl red'); % same rescaling used as in the beginning, be aware of HHMD version
+xlabel('t [sec]');ylabel('U [mV]');
+
+t=(1:length(adamHoldBreathPpglRedSplit))/fs;
+subplot(3,1,2); 
+plot(t,3.3 / 4096 *(adamHoldBreathPpglRedSplit - 2048)); title('Adam holding breath ppgl red');
+xlabel('t [sec]');ylabel('U [mV]');
+
+t=(1:length(adamControlBreathPpglRedSplit))/fs;
+subplot(3,1,3); 
+plot(t,3.3 / 4096 *(adamControlBreathPpglRedSplit - 2048)); title('Adam controlling breathing ppgl red');
+xlabel('t [sec]');ylabel('U [mV]');
+
+t=(1:length(adamSquatPpglRedSplit))/fs;
+subplot(3,1,3); 
+plot(t,3.3 / 4096 *(adamSquatPpglRedSplit - 2048)); title('Adam squat ppgl red');
+xlabel('t [sec]');ylabel('U [mV]');
+
+% load infrared ppgl signal into variables 
+adamRestPpglInfrared=adamRest.ppgl_nir;
+adamRestPpglInfraredSplit = adamRestPpglInfrared(1:30000); % be aware of matrix size
+
+adamHoldBreathPpglInfrared = adamHoldBreath30Sec.ppgl_nir;
+adamHoldBreathPpglInfraredSplit = adamHoldBreathPpglInfrared(1:30000);
+
+adamControlBreathPpglInfrared = adamControlBreath.ppgl_nir;
+adamControlBreathPpglInfraredSplit = adamControlBreathPpglInfrared(1:30000);
+
+adamSquat = hhmbinread('squat/adam_squat.hhm'); % this file was not loaded
+adamSquatPpglInfrared = adamSquat.ppgl_nir;
+adamSquatPpglInfraredSplit = adamSquatPpglInfrared(1:30000);
+
+% visualize signals
+figure()
+
+t=(1:length(adamRestPpglInfraredSplit))/fs;
+subplot(3,1,1); 
+plot(t,3.3 / 4096 *(adamRestPpglInfraredSplit - 2048)); title('Adam rest ppgl infrared'); % same rescaling used as in the beginning, be aware of HHMD version
+xlabel('t [sec]');ylabel('U [mV]');
+
+t=(1:length(adamHoldBreathPpglInfraredSplit))/fs;
+subplot(3,1,2); 
+plot(t,3.3 / 4096 *(adamHoldBreathPpglInfraredSplit - 2048)); title('Adam holding breath ppgl infrared');
+xlabel('t [sec]');ylabel('U [mV]');
+
+t=(1:length(adamControlBreathPpglInfraredSplit))/fs;
+subplot(3,1,3); 
+plot(t,3.3 / 4096 *(adamControlBreathPpglInfraredSplit - 2048)); title('Adam controlling breathing ppgl infrared');
+xlabel('t [sec]');ylabel('U [mV]');
+
+t=(1:length(adamSquatPpglInfraredSplit))/fs;
+subplot(3,1,3); 
+plot(t,3.3 / 4096 *(adamSquatPpglInfraredSplit - 2048)); title('Adam squat ppgl infrared');
+xlabel('t [sec]');ylabel('U [mV]');
+
 
 %% Frequency spectrum
 function frequencySpectrum(ecg,titleOfDiagram)
