@@ -2,13 +2,14 @@
 close all;
 clear all;
 
-% load files
+%% Load files and set variables
 adamRest=hhmbinread('hhm_konz1.hhm');
 zsofiaRest=hhmbinread('hhmkonz2.hhm');
 brigittaRest=hhmbinread('hhm_konz3.hhm');
 
 % this transformation applies to the „2” signed HHMD 
-% .ecg1 is a property of the object (for instance: adamRest)
+% .ecg1 is a property of the object (for instance: adamRest) and holds the
+% value of Einthoven I EKG signal
 adamRestMv = 3.3 / 4096 *(adamRest.ecg1 - 2048);
 zsofiaRestMv = 3.3 / 4096 *(zsofiaRest.ecg1 - 2048);
 brigittaRestMv = 3.3 / 4096 *(brigittaRest.ecg1 - 2048);
@@ -26,21 +27,109 @@ figure()
 t=(1:length(adamRestMv))/fs; % time axis [sec]
 plot(t,adamRestMv)
 
-% visualize filtered data
-% using 5th-order Butterworth filter
-adamRestMvFiltered = butterworthFilter(adamRestMv,5);
+%% 1/a Filter and visualize signals
+
+% filter signals using 5th-order Butterworth filter, 0.5 Hz lower and 40Hz
+% upper cutoff frequencies
+adamRestMvFiltered = butterworthFilter(adamRestMv,5,40,0.5);
+zsofiaRestMvFiltered = butterworthFilter(zsofiaRestMv,5,40,0.5);
+brigittaRestMvFiltered = butterworthFilter(brigittaRestMv,5,40,0.5);
+
+% visualize filtered signal
 figure()
 t=(1:length(adamRestMvFiltered))/fs; % time axis [sec]
 plot(t,adamRestMvFiltered)
 
-function highPassFilteredSignal=butterworthFilter(ecg, order)
+% filter signals using 5th-order Butterworth filter, 0.5 Hz lower and 20Hz
+% upper cutoff frequencies
+adamRestMvFiltered = butterworthFilter(adamRestMv,5,20,0.5);
+zsofiaRestMvFiltered = butterworthFilter(zsofiaRestMv,5,20,0.5);
+brigittaRestMvFiltered = butterworthFilter(brigittaRestMv,5,20,0.5);
+
+% visualize filtered signal
+figure()
+t=(1:length(adamRestMvFiltered))/fs; % time axis [sec]
+plot(t,adamRestMvFiltered)
+
+% split signals
+adamRestMvFilteredSplit = adamRestMvFiltered(5000:9999);
+zsofiaRestMvFilteredSplit = zsofiaRestMvFiltered(5000:9999);
+brigittaRestMvFilteredSplit = brigittaRestMvFiltered(5000:9999);
+
+% visualize split signals
+t=(1:length(adamRestMvFilteredSplit))/fs; % all three signals have the same length by now
+figure()
+subplot(3,1,1) %(3 rows, 1th element)
+plot(t,adamRestMvFilteredSplit); title('Adam rest');xlabel('t [sec]');ylabel('U [mV]');
+subplot(3,1,2)
+plot(t,zsofiaRestMvFilteredSplit); title('Zsofia rest');xlabel('t [sec]');ylabel('U [mV]');
+subplot(3,1,3)
+plot(t,brigittaRestMvFilteredSplit); title('Brigitta rest');xlabel('t [sec]');ylabel('U [mV]');
+
+%% 1/b Visualize in frequency domain
+
+frequencySpectrum(adamRestMvFilteredSplit,'Adam rest fft');
+frequencySpectrum(zsofiaRestMvFilteredSplit,'Zsofia rest fft');
+frequencySpectrum(brigittaRestMvFilteredSplit,'Brigitta rest fft');
+
+%holding breath for 30 seconds: Adam 
+adamHoldBreath30Sec=hhmbinread('hold_breath/adam_hold_breath_30sec.hhm');
+adamHoldBreath30SecFiltered = butterworthFilter(adamHoldBreath30Sec.ecg1 - mean(adamHoldBreath30Sec.ecg1),5,20,0.5);
+frequencySpectrum(adamHoldBreath30SecFiltered,'Adam - holding breath for 30 seconds - fft'); %visualize in frequency domain 
+ 
+%holding breath for 30 seconds: Zsofia 
+zsofiaHoldBreath30Sec=hhmbinread('hold_breath/zsofia_hold_breath_30sec.hhm');
+zsofiaHoldBreath30SecFiltered = butterworthFilter(zsofiaHoldBreath30Sec.ecg1 - mean(zsofiaHoldBreath30Sec.ecg1),5,20,0.5);
+frequencySpectrum(zsofiaHoldBreath30SecFiltered,'Zsofia - holding breath for 30 seconds - fft'); %visualize in frequency domain 
+
+%holding breath for 30 seconds: Brigitta
+brigittaHoldBreath30Sec=hhmbinread('hold_breath/brigitta_hold_breath_30sec.hhm');
+brigittaHoldBreath30SecFiltered = butterworthFilter(brigittaHoldBreath30Sec.ecg1 - mean(brigittaHoldBreath30Sec.ecg1),5,20,0.5);
+frequencySpectrum(brigittaHoldBreath30SecFiltered,'Brigitta - holding breath for 30 seconds - fft'); %visualize in frequency domain 
+
+%controlling breath: Adam 
+adamControlBreath=hhmbinread('control_breath/adam_control_breath.hhm');
+adamControlBreathFiltered = butterworthFilter(adamControlBreath.ecg1 - mean(adamControlBreath.ecg1),5,20,0.5);
+frequencySpectrum(adamControlBreathFiltered,'Adam - controlled breathing - fft'); %visualize in frequency domain 
+ 
+%controlling breath: Zsofia 
+zsofiaControlBreath=hhmbinread('control_breath/zsofia_control_breath.hhm');
+zsofiaControlBreathFiltered = butterworthFilter(zsofiaControlBreath.ecg1 - mean(zsofiaControlBreath.ecg1),5,20,0.5);
+frequencySpectrum(zsofiaControlBreathFiltered,'Zsofia - controlled breathing - fft'); %visualize in frequency domain 
+
+%controlling breath: Brigitta
+brigittaControlBreath=hhmbinread('control_breath/brigitta_control_breath.hhm');
+brigittaControlBreathFiltered = butterworthFilter(brigittaControlBreath.ecg1 - mean(brigittaControlBreath.ecg1),5,20,0.5);
+frequencySpectrum(brigittaControlBreathFiltered,'Brigitta - controlled breathing - fft'); %visualize in frequency domain
+
+%% Frequency spectrum
+function frequencySpectrum(ecg,titleOfDiagram)
+    fs=1000; % sampled at this frequency [Hz]   
+    Y = fft(ecg); % fast fourier transformation
+    L=length(ecg); % signal length
+    signal = abs(Y/L); % absolute value of frequency
+    spektrum = signal(1:L/2+1); % cut the signal into half
+    f = fs *(0:(L/2))/L; % frequency axsis [Hz] 
+    % visualize half signal
+    figure();
+    plot(f,spektrum) 
+    title(titleOfDiagram)
+    xlabel('f [Hz]')
+    ylabel('amplification')
+    xlim([0 10]) % X axis
+end
+
+%% Butterworth filter
+function highPassFilteredSignal=butterworthFilter(ecg, order, lowerCutOff,upperCutOff)
 % ecg: hhm object's property
 % order: Butterworth filter parameter, for instance: 5 -> 5th-order
 % Butterworth filter
+% lowerCutOff: lower cutoff frequency [Hz]
+% upperCutOff: upper cutoff frequency [Hz]
 fs=1024; % sampled at this frequency [Hz]
 n = order; % xth-order Butterworth filter parameter
-fUpperCutOff = 0.5; % upper cutoff frequency [Hz]
-fLowerCutOff = 20; % lower cutoff frequency [Hz]
+fUpperCutOff = upperCutOff; % upper cutoff frequency [Hz]
+fLowerCutOff = lowerCutOff; % lower cutoff frequency [Hz]
 % create two Butterwort filters, one for upper cutoff, one for lower cutoff
 [bLower,aLower]=butter(n,fLowerCutOff/(fs*0.5),'low');
 [bUpper,aUpper]=butter(n,fUpperCutOff/(fs*0.5),'high'); 
@@ -49,6 +138,7 @@ lowPassFilteredSignal = filtfilt(bLower, aLower, ecg);
 highPassFilteredSignal = filtfilt(bUpper, aUpper, lowPassFilteredSignal);
 end
 
+%% HHM file reader
 function o=hhmbinread(filename)
 %HHM file reader
 % Input: name of HHM file (with full path and extension)
