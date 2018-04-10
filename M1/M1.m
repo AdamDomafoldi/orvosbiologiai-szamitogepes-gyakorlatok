@@ -39,8 +39,8 @@ figure()
 t=(1:length(adamRestMvFiltered))/fs; % time axis [sec]
 plot(t,adamRestMvFiltered)
 
-% filter signals using 5th-order Butterworth filter, 0.5 Hz lower and 20Hz
-% upper cutoff frequencies
+% filter signals using 5th-order Butterworth filter, 0.5 Hz upper and 20Hz
+% lower cutoff frequencies
 adamRestMvFiltered = butterworthFilter(adamRestMv,5,20,0.5);
 zsofiaRestMvFiltered = butterworthFilter(zsofiaRestMv,5,20,0.5);
 brigittaRestMvFiltered = butterworthFilter(brigittaRestMv,5,20,0.5);
