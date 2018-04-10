@@ -133,12 +133,12 @@ plot(t,3.3 / 4096 *(adamHoldBreathPpglRedSplit - 2048)); title('Adam holding bre
 xlabel('t [sec]');ylabel('U [mV]');
 
 t=(1:length(adamControlBreathPpglRedSplit))/fs;
-subplot(3,1,3); 
+subplot(4,1,1); 
 plot(t,3.3 / 4096 *(adamControlBreathPpglRedSplit - 2048)); title('Adam controlling breathing ppgl red');
 xlabel('t [sec]');ylabel('U [mV]');
 
 t=(1:length(adamSquatPpglRedSplit))/fs;
-subplot(3,1,3); 
+subplot(4,1,2); 
 plot(t,3.3 / 4096 *(adamSquatPpglRedSplit - 2048)); title('Adam squat ppgl red');
 xlabel('t [sec]');ylabel('U [mV]');
 
@@ -160,25 +160,24 @@ adamSquatPpglInfraredSplit = adamSquatPpglInfrared(1:30000);
 figure()
 
 t=(1:length(adamRestPpglInfraredSplit))/fs;
-subplot(3,1,1); 
+subplot(5,1,1); 
 plot(t,3.3 / 4096 *(adamRestPpglInfraredSplit - 2048)); title('Adam rest ppgl infrared'); % same rescaling used as in the beginning, be aware of HHMD version
 xlabel('t [sec]');ylabel('U [mV]');
 
 t=(1:length(adamHoldBreathPpglInfraredSplit))/fs;
-subplot(3,1,2); 
+subplot(5,1,2); 
 plot(t,3.3 / 4096 *(adamHoldBreathPpglInfraredSplit - 2048)); title('Adam holding breath ppgl infrared');
 xlabel('t [sec]');ylabel('U [mV]');
 
 t=(1:length(adamControlBreathPpglInfraredSplit))/fs;
-subplot(3,1,3); 
+subplot(6,1,1); 
 plot(t,3.3 / 4096 *(adamControlBreathPpglInfraredSplit - 2048)); title('Adam controlling breathing ppgl infrared');
 xlabel('t [sec]');ylabel('U [mV]');
 
 t=(1:length(adamSquatPpglInfraredSplit))/fs;
-subplot(3,1,3); 
+subplot(6,1,2); 
 plot(t,3.3 / 4096 *(adamSquatPpglInfraredSplit - 2048)); title('Adam squat ppgl infrared');
 xlabel('t [sec]');ylabel('U [mV]');
-
 
 %% Frequency spectrum
 function frequencySpectrum(ecg,titleOfDiagram)
