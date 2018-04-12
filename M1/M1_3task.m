@@ -5,21 +5,20 @@ clear all;
 %% 3 task
 
 % load files and set variables
-signal=hhmbinread('blood_pressure/adam.hhm');
+signal=hhmbinread('blood_pressure/brigitta.hhm');
 ecgMv = toMillivolt(signal.ecg1); % get ecg1 and covert it to millivolt
 ppglNir = signal.ppgl_nir; % get nir value
 pressure = toPressure(signal.press); % get pressure value and convert it
 
-time = 0:length(ecgMv)-1; % we are indexing it from 0, therefore, -1 needed
 fs = 1000;
-t = time/fs;
+t = (0:length(ecgMv)-1)/fs;
 
 % filter signals
 % zero-phase digital filtering
 [b,a] = butter(5,0.044);
 ppglNirFilted = filtfilt(b,a,ppglNir);
 % butterworth filtering
-ecgMvFiltered = butterworthFilter(ecgMv,5,50,3);
+ecgMvFiltered = butterworthFilter(ecgMv,5,20,0.5);
 
 % visualize data
 figure();
@@ -44,9 +43,6 @@ ylabel('Blood pressure [mmHg]');
 
 % RR-peaks
 rrPeaks = pan_tompkins(ecgMvFiltered);
-
-% PPG R-peak distances
-ppgRDifference(ppgBeginning, rrPeaks);
 
 %% Butterworth filter
 function highPassFilteredSignal=butterworthFilter(ecg, order, lowerCutOff,upperCutOff)

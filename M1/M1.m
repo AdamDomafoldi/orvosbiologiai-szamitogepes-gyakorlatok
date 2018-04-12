@@ -77,11 +77,11 @@ plot(t,brigittaRestMvFilteredSplit);
 title('Brigitta rest - filtered and split EKG signal');xlabel('t [sec]');ylabel('U [mV]');
 
 %% 1/b Visualize in frequency domain
-% fast fourier transform ekg signals and visualize them, original filtered
+% fast fourier transform ekg signals and visualize them, original unfiltered
 % signal is used, no split
-frequencySpectrum(adamRestMvFiltered,'Adam rest - filtered EKG frequency spectrum (original length)');
-frequencySpectrum(zsofiaRestMvFiltered,'Zsofia rest - filtered EKG frequency spectrum (original length)');
-frequencySpectrum(brigittaRestMvFiltered,'Brigitta rest - filtered  EKG frequency spectrum (original length)'); 
+frequencySpectrum(adamRestMv,'Adam rest - EKG frequency spectrum (original length)');
+frequencySpectrum(zsofiaRestMv,'Zsofia rest - EKG frequency spectrum (original length)');
+frequencySpectrum(brigittaRestMv,'Brigitta rest - EKG frequency spectrum (original length)'); 
 
 %% 2/a
 % ekg signals
@@ -193,8 +193,22 @@ title('Brigitta squat - Nir split ppgl signal');
 xlabel('t [sec]');
 ylabel('U [mV]');
 
+%% 2/b
+
+% fast fourier transform ppgl RED signals and visualize them, original unfiltered signal is used, no split
+frequencySpectrum(brigittaControlBreathPpglRed,'Brigitta control breathing - ppgl RED frequency spectrum (original length)');
+frequencySpectrum(brigittaHoldBreathPpglRed,'Brigitta hold breath - ppgl RED frequency spectrum (original length)');
+frequencySpectrum(brigittaRestPpglRed,'Brigitta rest - ppgl RED frequency spectrum (original length)'); 
+frequencySpectrum(brigittaPhysicalActivityPpglRed,'Brigitta physical activity - ppgl RED frequency spectrum (original length)'); 
+
+% fast fourier transform ppgl NIR signals and visualize them, original unfiltered signal is used, no split
+frequencySpectrum(brigittaControlBreathPpglNir,'Brigitta control breathing - ppgl NIR frequency spectrum (original length)');
+frequencySpectrum(brigittaHoldBreathPpglNir,'Brigitta hold breath - ppgl NIR frequency spectrum (original length)');
+frequencySpectrum(brigittaRestPpglNir,'Brigitta rest - ppgl NIR frequency spectrum (original length)'); 
+frequencySpectrum(brigittaPhysicalActivityPpglNir,'Brigitta physical activity - ppgl NIR frequency spectrum (original length)'); 
+
 function out = toMillivolt(ECGsignal)
-    out=3.3/8192*(ECGsignal-2048);
+    out = 3.3 / 8192 * (ECGsignal - 2048);
 end
 
 %% Frequency spectrum
