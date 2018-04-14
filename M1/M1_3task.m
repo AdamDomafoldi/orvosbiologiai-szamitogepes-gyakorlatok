@@ -23,12 +23,14 @@ ecgMvFiltered = butterworthFilter(ecgMv,5,20,0.5);
 % visualize data
 figure();
 plot(t,ppglNirFilted/20,'r')
-hold on;
-plot(t,pressure,'b');
 title('PPG - Blood pressure');
 xlabel('t [ms]');
 ylabel(' Blood pressure [mmHg]');
-legend('PPG','Blood pressure');
+hold on;
+plot(t,pressure,'g');
+plot(t,ecgMv*100,'b');
+legend('PPG','Blood pressure','EKG');
+
 hold off;
 
 % PPG peak
