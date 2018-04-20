@@ -90,59 +90,32 @@ hold off
 
 %% 5. feladat
 
-dist = (148);
-%(C-B)/2 - (B-A)/2
- for i=1:length(R_hely)
-    if i+2 == length(R_hely)
-        break 
-    end
-    dist(i)=((R_hely(i+2)-R_hely(i+1))/2+R_hely(i+1)) - ((R_hely(i+1)-R_hely(i))/2+R_hely(i));
- end
+% ez nem volt jo :/ rip algoritmus
+% dist = (148);
+% 
+%  for i=1:length(R_hely)
+%     if i+2 == length(R_hely)
+%         break 
+%     end
+%     dist(i)=((R_hely(i+2)-R_hely(i+1))/2+R_hely(i+1)) - ((R_hely(i+1)-R_hely(i))/2+R_hely(i));
+%  end
  
- %atlag
- avg = mean(dist)
-
 % 5. Feladat:
-% period=500; % erre az alapperiódusra normálunk, 500 minta
-% 
-% dist = [];
-% for j = 1:size(R_hely,1)
-% 
-%     
-% end
-% 
-% interpol = zeros(length(dist), period);
-% for i=1:length(dist)
-%     lepes = (dist(i)-1) / (period-1); % lépésköz
-%     val = interp1([1:dist(i)+1], ekg(R_hely(i):R_hely(i+1)), [1:lepes:dist(i)]);
-%     interpol(i,:)=val;
-% end
-% zaj_adat = interpol(1,:);
-% atlag = mean(interpol);
-% 
-% figure;
-% plot([zaj_adat(251:500) zaj_adat(1:250)]);
-% % sorrend csere, hogy ne csúcstól csúcsig nézzük
-% title('Zajos alapperiódus');
-% figure;
-% plot([atlag(251:500)])
+period=500; % erre az alapperiódusra normálunk, 500 minta
+RR_dist = R_hely(2:end) - R_hely(1:end-1); % különbözõ RR távok
+RR_interpol = zeros(length(RR_dist), period);
+for i=1:length(RR_dist)
+step = (RR_dist(i)-1) / (period-1); % lépésköz
+val = interp1([1:RR_dist(i)+1], ekg(R_hely(i):R_hely(i+1)),[1:step:RR_dist(i)]);
+RR_interpol(i,:)=val;
+end
+atlagolt = mean(RR_interpol);
+zajos = RR_interpol(1,:);
+figure;
+plot([zajos(251:500) zajos(1:250)]);
+% sorrend csere, hogy ne csúcstól csúcsig nézzük
+title('Zajos alapperiódus');
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+figure;
+plot([atlagolt(251:500) atlagolt(1:250)]);
+title('Átlagolt EKG');
