@@ -43,7 +43,6 @@ frequencySpectrum(ekg,'Nyers jel frekvencia tartomány');
 
 %Szûrés
 ekg_50_szurt=band_filter('butter',2,ekg);
-figure
 frequencySpectrum(ekg_50_szurt,'Szûrt frekvencia tartomány');
 
 % Zaj
@@ -119,3 +118,19 @@ title('Zajos alapperiódus');
 figure;
 plot([atlagolt(251:500) atlagolt(1:250)]);
 title('Átlagolt EKG');
+
+% EKG jel frekvencia tartományban
+
+frequencySpectrum(ekg,'Nyers jel frekvencia tartomány');
+
+%Szûrés
+frequencySpectrum(atlagolt,'Szûrt frekvencia tartomány');
+
+% Zaj
+[B2,A2]=butter(2,[0.09655172413 0.10049261083],'bandpass'); %50Hz-es zaj
+zaj=filtfilt(B2,A2,atlagolt);
+frequencySpectrum(zaj,' Zaj frekvencia tartomány');
+
+% Jel-zaj viszony
+jel_szurt_uj = atlagolt-zaj;
+jel_zaj_szurt_uj = snr(jel_szurt_uj,zaj); % Szûrés utáni jel-zaj arány
