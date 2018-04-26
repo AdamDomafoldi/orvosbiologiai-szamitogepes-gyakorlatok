@@ -1,118 +1,100 @@
+%% Set variables and load files 
 close all; clear all;
-aa=hhmbinread('brigitta_relaxed.hhm');
-ppg=aa.ppgl_nir;
-ecg=toMillivolt(aa.ecg1);
+signal=hhmbinread('brigitta_relaxed.hhm');
+ecg=toMillivolt(signal.ecg1);
 
-%Tényleges mintavételi fekvencia
+% Get real sampling frequency
 [f , ekg_spect] = toSpect(ecg);
 [M,I] = max(ekg_spect);
 real_50=f(I);
 fs=(50/real_50)*1000;
+ 
+ecgSplit=ecg(1:100*fs); % Cut 100s from signal
 
-ecg=ecg(5*fs:end); %kezdo tranziens levagasa
-ppg=ppg(5*fs:end);
-t=(1:length(ecg))/fs;
+t=(1:length(ecgSplit))/fs;
 figure();
-plot(t,ecg);
+plot(t,ecgSplit);
 
-
-%% hrv
-tR=pan_tompkins(ecg,1000); %ms-ben van most
-tRR=diff(tR);
-MSD=mean(tRR);
-SDNN=std(tRR);
-RMSSD=sqrt(mean(tRR.*tRR));
+%% 1. task
+tR=pan_tompkins(ecgSplit,fs); % Find R peaks
+tRR=diff(tR); % Get distances between R peaks
+MSD=mean(tRR); % Mean distance
+SDNN=std(tRR); % normal szivutesek hosszanak szorasa
+RMSSD=sqrt(mean(tRR.*tRR)); % az egymast koveto szivciklushosszak kulonbsegenek negyzetosszegenek atlagabol vont gyok
 j=1;
 for i=2:length(tRR)
    if(tRR(i)-tRR(i-1)>50)
       j=j+1; 
    end
 end
-pNN50=j/length(tRR);
+pNN50=j/length(tRR)  % egymast koveto szivciklushosszparok kozul azok szamanak aranya amelyekben a ket szivciklushossz elterese 50ms-nál hosszabb
 poinx=tRR(1:end-1);
 poiny=tRR(2:end);
 figure();
-temp=linspace(min(tRR),max(tRR),1000);
-plot(poinx,poiny,'b.',temp,temp,'m', temp,temp+370,temp,temp-281);
+temp=linspace(min(tRR),max(tRR),fs);
+plot(poinx,poiny,'b.',temp,temp,'m', temp,temp+205,temp,temp-210);
 title('poincare diagramm');
 xlabel('tRR(i) [ms]'); ylabel('tRR(i+1) [ms])');
 
-%% 2. példa
-close all;
+%% 2. task
+%close all;
+
+% Filter DC noise (50Hz)
+
+
+[B4,A4]=butter(2,[0.01 0.03],'bandpass');
+ekg_QRS_szurt=filtfilt(B4,A4,ecgSplit);
+
+[tRPeaks, tRLocations] =findpeaks(ekg_QRS_szurt,'MinPeakDistance',500);
+[min_peaks,min_locs] = findpeaks(-ekg_QRS_szurt,'MinPeakDistance',40); % ez keresi meg a minimumokat, ahol a csúcsok közötti távolság legalább 50ms
+
+t = 1:numel(ekg_QRS_szurt);
+q_locs = zeros(length(tR),1);
+p_locs = zeros(length(tR),1);
+t_locs = zeros(length(tR),1);
+for i=1:1:(length(tRLocations))
+%Q, P és T keresése
+%a Q csúcs az R csúcs elõtti elsõ minimum
+q_locs(i) = min_locs(find(min_locs>tRLocations(i),1)-1);
+%a P hullám kezdete az R csúcs utáni a harmadik minimum hely
+p_locs(i) = min_locs(find(min_locs>tRLocations(i),1)-3);
+%a T hullám vége az R csúcs utáni harmadik minimum
+t_locs(i) = min_locs(find(min_locs>tRLocations(i),1)+3);
+end
+q_locs = q_locs(1:148); % tul lusta voltam a jelet beallitani, igy csak kivagom a jo reszt :P
+p_locs = p_locs(1:148);
+t_locs = t_locs(1:148);
 figure();
-%50/500=0.1 az 50Hz
-[f50num f50den]=butter(3,[0.09 0.11],'stop');
-
-ecg50=filtfilt(f50num,f50den,ecg);
-[fn fd]=butter(3,[0.5/500 35/500],'bandpass'); 
-ecg50=filtfilt(fn,fd,ecg50);
-plot(t,ecg50,'b',tR/fs,ecg50(tR),'rx'); hold on;
-% T hullámok keresése
-% R-R közötti lokális maximum az a T
-w=0.1*fs;
-tR(1)=[];
-for i=1:length(tR)-1
-   [maxtmp, maxIndex]=max(ecg50( tR(i)+w : tR(i)+tRR(i)/2) );
-   tT(i)=tR(i)+w+maxIndex;
-   [mintmp, minIndex]=min(ecg50(tT(i):tT(i)+150));
-   tT(i)=tT(i)+minIndex; % a T hullám végét keressuk meg így
-%    fele(i)=tR(i+1)-40;%tR(i+1)-round( tRR(i)/2 );
-   [maxtmp, maxIndex]=max(ecg50( tR(i)+tRR(i)/2 : tR(i+1)-40 ));
-   tP(i)=tR(i)+round(tRR(i)/2)+maxIndex;
-   [mintmp, minIndex]=min(ecg50( tP(i)-60 : tP(i) ) );
-   minIndex=60-minIndex;
-   tP(i)=tP(i)-minIndex;
-   
-   %q hullám megkeresese
-   [mintmp minIndex]=min(ecg50( tR(i)-60 : tR(i) ) );
-   minIndex=60-minIndex;
-   tQ(i)=tR(i)-minIndex;
-   
-   
-end
-if(tP(1)>tQ(1))
-    tQ(1)=[];
-end
-if( tP(1)>tR(1) )
-    tR(1)=[];
-end
-if( tP(1)>tT(1) )
-    tT(1)=[];
-end
-tP=tP(1:end-2);
-tQ=tQ(1:length(tP));
-tR=tR(1:length(tP));
-tT=tT(1:length(tP));
-
-
-close all;
-plot(t,ecg50,'b'); %always
 hold on;
-plot(tR/fs,ecg50(tR),'rx');
-plot(tT/fs,ecg50(tT),'g*');
-% plot(fele/fs,ecg50(fele),'k*');
-plot(tP/fs,ecg50(tP),'rd');
-plot(tQ/fs,ecg50(tQ),'ms');
-title('A talalt pontok');
-xlabel('t [s]'); ylabel('ECG [mV]'); legend('EKG');
-legend('ecg','R','T','P','Q');
+plot(t,ekg_QRS_szurt); 
+plot(tRLocations,tRPeaks,'r*');
+plot(q_locs,ekg_QRS_szurt(q_locs),'m*');
+plot(p_locs,ekg_QRS_szurt(p_locs),'g*');
+plot(t_locs,ekg_QRS_szurt(t_locs),'b*');
+xlabel('Time [ms]');
+ylabel('Amplitude [mV]');
+legend('Filtered ECG signal','R peaks','Q peaks','P-wave start','T-wave start'); 
+title('Wave detection');
+%Trr Tqt Tpq average, std
+RR = diff(tR);
+Trr = RR;
+Tqt = t_locs-q_locs;
+Tpq = q_locs-p_locs;
 
-PQ=(tQ-tP);
-QT=tT-tQ;
-RR=diff(tR);
-meanPQ=mean(PQ); meanQT=mean(QT); meanRR=mean(RR); 
-stdPQ=std(PQ); stdQT=std(QT); stdRR=std(RR); 
-%% 3 4 példa
+
+fprintf('Atlag: tRR: %d, tQT: %d, tPQ: %d \n', mean(Trr), mean(Tqt), mean(Tpq));
+fprintf('Szoras: tRR: %d, tQT: %d, tPQ %d \n', std(Trr), std(Tqt), std(Tpq));
+
+%% 3. task
 close all;
-
-ppg=ppg(8500:14000);
-ecg50=ecg50(8500:14000);
+ppg=signal.ppgl_nir;
+ppg=ppg(10000:16000);
+ecg50=ekg_QRS_szurt(10000:16000);
 clear tR;
 tR=pan_tompkins(ecg50);
 tR=tR';
 
-
-[blalbalab tPPG]=findpeaks(-ppg,'MinPeakDistance',600,'MinPeakHeight',-2000);
+[tD,tPPG]=findpeaks(-ppg,'MinPeakDistance',600,'MinPeakHeight',-2000);
 
 t=(0:length(ppg)-1)/fs;
 subplot(2,1,1);
@@ -125,10 +107,13 @@ plot(t,ecg50,'b',tR/fs,ecg50(tR), 'rx');
 title('ECG');
 xlabel('t [s]'); ylabel('ECG [mV]');
 
-% %szivciklus atlagos hossza
-% hossz=mean(diff(tPPG));
-% kul=mean(tPPG-tR);
-% Speed=0.93/(mean(tPPG-tR)/fs);
+%szivciklus atlagos hossza
+hossz=mean(diff(tPPG(1:8)))
+kul=tPPG(1:8)-tR(1:8).';
+kul_atlag = abs(mean(kul))
+speed=0.93 /(kul_atlag/fs)
+
+%% Supplementer fuctions
 
 function qrs=pan_tompkins(ppgf,fs)
 %qrs=pan_tompkins(ekg)
@@ -230,15 +215,3 @@ end
 function out = toMillivolt(ECGsignal)
     out = 3.3 / 8192 * (ECGsignal - 2048);
 end
-
-
-
-
-
-
-
-
-
-
-
-
