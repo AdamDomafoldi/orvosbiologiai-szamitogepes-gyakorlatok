@@ -112,7 +112,7 @@ xlabel('t [s]'); ylabel('ECG [mV]');
 hossz=mean(diff(tPPG(1:8)))
 kul=tPPG(1:8)-tR(1:8).';
 kul_atlag = abs(mean(kul))
-speed=0.93 /(kul_atlag/fs)
+speed=0.86 /(kul_atlag/fs)
 
 %% Supplementer fuctions
 
