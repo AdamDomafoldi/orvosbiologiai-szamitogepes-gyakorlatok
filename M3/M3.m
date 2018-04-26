@@ -75,6 +75,7 @@ xlabel('Time [ms]');
 ylabel('Amplitude [mV]');
 legend('Filtered ECG signal','R peaks','Q peaks','P-wave start','T-wave start'); 
 title('Wave detection');
+hold off;
 %Trr Tqt Tpq average, std
 RR = diff(tR);
 Trr = RR;
@@ -86,7 +87,7 @@ fprintf('Atlag: tRR: %d, tQT: %d, tPQ: %d \n', mean(Trr), mean(Tqt), mean(Tpq));
 fprintf('Szoras: tRR: %d, tQT: %d, tPQ %d \n', std(Trr), std(Tqt), std(Tpq));
 
 %% 3. task
-close all;
+%close all;
 ppg=signal.ppgl_nir;
 ppg=ppg(10000:16000);
 ecg50=ekg_QRS_szurt(10000:16000);
@@ -95,14 +96,14 @@ tR=pan_tompkins(ecg50);
 tR=tR';
 
 [tD,tPPG]=findpeaks(-ppg,'MinPeakDistance',600,'MinPeakHeight',-2000);
-
+figure();
 t=(0:length(ppg)-1)/fs;
-subplot(2,1,1);
+subplot(3,1,1);
 plot(t,ppg,'r',tPPG/fs,ppg(tPPG),'bx');
 title('PPG jel');
 xlabel('t [s]'); ylabel('Amplitude'); 
 hold on;
-subplot(2,1,2);
+subplot(3,1,2);
 plot(t,ecg50,'b',tR/fs,ecg50(tR), 'rx');
 title('ECG');
 xlabel('t [s]'); ylabel('ECG [mV]');
