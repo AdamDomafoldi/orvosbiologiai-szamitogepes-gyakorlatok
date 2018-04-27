@@ -17,22 +17,22 @@ plot(t,ecgSplit);
 
 %% 1. task
 tR=pan_tompkins(ecgSplit,fs); % Find R peaks
-tRR=diff(tR); % Get distances between R peaks
-MSD=mean(tRR); % Mean distance
-SDNN=std(tRR); % normal szivutesek hosszanak szorasa
-RMSSD=sqrt(mean(tRR.*tRR)); % az egymast koveto szivciklushosszak kulonbsegenek negyzetosszegenek atlagabol vont gyok
+tRR=diff(tR) % Get distances between R peaks
+MSD=mean(tRR) % Az egymást követõ szívciklus- hosszak különbségének átlaga
+SDNN=std(tRR) % Normal szivutesek hosszanak szorasa
+RMSSD=sqrt(mean(tRR.*tRR)) % Az egymast koveto szivciklushosszak kulonbsegenek negyzetosszegenek atlagabol vont gyok
 j=1;
 for i=2:length(tRR)
    if(tRR(i)-tRR(i-1)>50)
       j=j+1; 
    end
 end
-pNN50=j/length(tRR)  % egymast koveto szivciklushosszparok kozul azok szamanak aranya amelyekben a ket szivciklushossz elterese 50ms-nál hosszabb
+pNN50=j/length(tRR)  % Az egymast koveto szivciklushosszparok kozul azok szamanak aranya amelyekben a ket szivciklushossz elterese 50ms-nál hosszabb
 poinx=tRR(1:end-1);
 poiny=tRR(2:end);
 figure();
 temp=linspace(min(tRR),max(tRR),fs);
-plot(poinx,poiny,'b.',temp,temp,'m', temp,temp+205,temp,temp-210);
+plot(poinx,poiny,'b.',temp,temp,'m', temp,temp+205,temp,temp-410);
 title('poincare diagramm');
 xlabel('tRR(i) [ms]'); ylabel('tRR(i+1) [ms])');
 
@@ -61,7 +61,7 @@ p_locs(i) = min_locs(find(min_locs>tRLocations(i),1)-3);
 %a T hullám vége az R csúcs utáni harmadik minimum
 t_locs(i) = min_locs(find(min_locs>tRLocations(i),1)+3);
 end
-q_locs = q_locs(1:148); % tul lusta voltam a jelet beallitani, igy csak kivagom a jo reszt :P
+q_locs = q_locs(1:148);
 p_locs = p_locs(1:148);
 t_locs = t_locs(1:148);
 figure();
@@ -100,7 +100,7 @@ figure();
 t=(0:length(ppg)-1)/fs;
 subplot(3,1,1);
 plot(t,ppg,'r',tPPG/fs,ppg(tPPG),'bx');
-title('PPG jel');
+title('PPG signal');
 xlabel('t [s]'); ylabel('Amplitude'); 
 hold on;
 subplot(3,1,2);
