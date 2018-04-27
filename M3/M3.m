@@ -73,7 +73,7 @@ plot(p_locs,ekg_QRS_szurt(p_locs),'g*');
 plot(t_locs,ekg_QRS_szurt(t_locs),'b*');
 xlabel('Time [ms]');
 ylabel('Amplitude [mV]');
-legend('Filtered ECG signal','R peaks','Q peaks','P-wave start','T-wave start'); 
+legend('Filtered ECG signal','R peaks','Q peaks','P-wave start','T-wave end'); 
 title('Wave detection');
 hold off;
 %Trr Tqt Tpq average, std
