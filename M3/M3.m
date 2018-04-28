@@ -45,6 +45,13 @@ xlabel('tRR(i) [ms]'); ylabel('tRR(i+1) [ms])');
 [B4,A4]=butter(2,[0.01 0.03],'bandpass');
 ekg_QRS_szurt=filtfilt(B4,A4,ecgSplit);
 
+figure;
+
+hold on
+plot(t,ecgSplit,'b');
+plot(t,ekg_QRS_szurt,'r');
+hold off
+
 [tRPeaks, tRLocations] =findpeaks(ekg_QRS_szurt,'MinPeakDistance',500);
 [min_peaks,min_locs] = findpeaks(-ekg_QRS_szurt,'MinPeakDistance',40); % ez keresi meg a minimumokat, ahol a csúcsok közötti távolság legalább 50ms
 
